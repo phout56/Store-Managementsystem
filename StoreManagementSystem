@@ -1,0 +1,277 @@
+import java.util.*;
+
+// Class for Product
+class Product {
+    private String productName;
+    private String productId;
+    private double price;
+    private int quantity;
+
+    public Product(String productName, String productId, double price, int quantity) {
+        this.productName = productName;
+        this.productId = productId;
+        this.price = price;
+        this.quantity = quantity;
+    }
+
+    public String getProductName() { return productName; }
+    public String getProductId() { return productId; }
+    public double getPrice() { return price; }
+    public int getQuantity() { return quantity; }
+    
+    public void setQuantity(int quantity) { this.quantity = quantity; }
+
+    @Override
+    public String toString() {
+        return "Product{" + "productName='" + productName + '\'' + ", productId='" + productId + '\'' + ", price=" + price + ", quantity=" + quantity + '}';
+    }
+}
+
+// Class for Customer
+class Customer {
+    private String name;
+    private String customerId;
+    private String address;
+    private String phone;
+
+    public Customer(String name, String customerId, String address, String phone) {
+        this.name = name;
+        this.customerId = customerId;
+        this.address = address;
+        this.phone = phone;
+    }
+
+    public String getCustomerId() { return customerId; }
+
+    @Override
+    public String toString() {
+        return "Customer{" + "name='" + name + '\'' + ", customerId='" + customerId + '\'' + ", address='" + address + '\'' + ", phone='" + phone + '\'' + '}';
+    }
+}
+
+// Class for Invoice
+class Invoice {
+    private String invoiceId;
+    private Customer customer;
+    private List<Product> products;
+    private double totalAmount;
+
+    public Invoice(String invoiceId, Customer customer) {
+        this.invoiceId = invoiceId;
+        this.customer = customer;
+        this.products = new ArrayList<>();
+        this.totalAmount = 0.0;
+    }
+
+    public void addProduct(Product product, int quantity) {
+        if (product.getQuantity() >= quantity) {
+            product.setQuantity(product.getQuantity() - quantity);
+            this.products.add(new Product(product.getProductName(), product.getProductId(), product.getPrice(), quantity));
+            this.totalAmount += product.getPrice() * quantity;
+        } else {
+            System.out.println("Insufficient stock for product: " + product.getProductName());
+        }
+    }
+
+    @Override
+public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("INVOICE DETAILS\n");
+    sb.append("---------------\n");
+    sb.append("Invoice ID: ").append(invoiceId).append("\n\n");
+    
+    // Customer Information
+    sb.append("Customer Details:\n");
+    sb.append(customer.toString()).append("\n\n");
+    
+    // Product Details
+    sb.append("PRODUCTS:\n");
+    sb.append(String.format("%-30s %-10s %-10s %-15s\n", 
+        "Product Name", "Quantity", "Unit Price", "Total Price"));
+    sb.append("----------------------------------------------------\n");
+    
+    double totalAmount = 0.0;
+    for (Product product : products) {
+        double productTotal = product.getPrice() * product.getQuantity();
+        sb.append(String.format("%-30s %-10d $%-9.2f $%-14.2f\n", 
+            product.getProductName(), 
+            product.getQuantity(), 
+            product.getPrice(), 
+            productTotal));
+        totalAmount += productTotal;
+    }
+    
+    sb.append("----------------------------------------------------\n");
+    sb.append(String.format("Total Invoice Amount: $%.2f", this.totalAmount));
+    
+    return sb.toString();
+}
+}
+
+// Class for StoreManager
+class StoreManager {
+    private final List<Product> products = new ArrayList<>();
+    private final List<Customer> customers = new ArrayList<>();
+    private final List<Invoice> invoices = new ArrayList<>();
+
+    public void addProduct(Product product) { products.add(product); }
+
+    public void updateProduct(String productId, String productName, double price, int quantity) {
+        for (Product product : products) {
+            if (product.getProductId().equals(productId)) {
+                product.setQuantity(quantity);
+                return;
+            }
+        }
+        System.out.println("Product not found.");
+    }
+
+    public void removeProduct(String productId) { products.removeIf(product -> product.getProductId().equals(productId)); }
+
+    public void displayProducts() { products.forEach(System.out::println); }
+
+    public void addCustomer(Customer customer) { customers.add(customer); }
+
+    public void createInvoice(String invoiceId, Customer customer) {
+        invoices.add(new Invoice(invoiceId, customer));
+    }
+
+    public void addProductToInvoice(String invoiceId, Product product, int quantity) {
+        for (Invoice invoice : invoices) {
+            if (invoice.toString().contains(invoiceId)) {
+                invoice.addProduct(product, quantity);
+                return;
+            }
+        }
+        System.out.println("Invoice not found.");
+    }
+
+    public void displayInvoices() { invoices.forEach(System.out::println); }
+    public List<Customer> getCustomers() {
+        return customers;
+    }
+    
+    // Getter for invoices
+    public List<Invoice> getInvoices() {
+        return invoices;
+    }
+    // Getter for products
+public List<Product> getProducts() {
+    return products;
+}
+
+}
+
+// Main Class
+public class StoreManagementSystem {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        StoreManager manager = new StoreManager();
+
+        while (true) {
+            System.out.println("\nStore Management System:");
+            System.out.println("1. Add Product\n2. Update Product\n3. Remove Product\n4. Display Products\n5. Add Customer\n6. Create Invoice\n7. Add Product to Invoice\n8. Display Invoices\n9. Exit");
+            System.out.print("Enter your choice: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (choice) {
+                case 1: // Add Product
+                    System.out.print("Enter product name: ");
+                    String productName = scanner.nextLine();
+                    System.out.print("Enter product ID: ");
+                    String productId = scanner.nextLine();
+                    System.out.print("Enter price: ");
+                    double price = scanner.nextDouble();
+                    System.out.print("Enter quantity: ");
+                    int quantity = scanner.nextInt();
+                    scanner.nextLine();
+                    manager.addProduct(new Product(productName, productId, price, quantity));
+                    break;
+            
+                case 2: // Update Product
+                    System.out.print("Enter product ID: ");
+                    String updateProductId = scanner.nextLine();
+                    System.out.print("Enter new product name: ");
+                    String newProductName = scanner.nextLine();
+                    System.out.print("Enter new price: ");
+                    double newPrice = scanner.nextDouble();
+                    System.out.print("Enter new quantity: ");
+                    int newQuantity = scanner.nextInt();
+                    scanner.nextLine();
+                    manager.updateProduct(updateProductId, newProductName, newPrice, newQuantity);
+                    break;
+            
+                case 3: // Remove Product
+                    System.out.print("Enter product ID to remove: ");
+                    String removeProductId = scanner.nextLine();
+                    manager.removeProduct(removeProductId);
+                    break;
+            
+                case 4: // Display Products
+                    manager.displayProducts();
+                    break;
+            
+                case 5: // Add Customer
+                    System.out.print("Enter customer name: ");
+                    String customerName = scanner.nextLine();
+                    System.out.print("Enter customer ID: ");
+                    String customerId = scanner.nextLine();
+                    System.out.print("Enter customer address: ");
+                    String address = scanner.nextLine();
+                    System.out.print("Enter customer phone: ");
+                    String phone = scanner.nextLine();
+                    manager.addCustomer(new Customer(customerName, customerId, address, phone));
+                    break;
+            
+                case 6: // Create Invoice
+                    System.out.print("Enter invoice ID: ");
+                    String invoiceId = scanner.nextLine();
+                    System.out.print("Enter customer ID: ");
+                    String custId = scanner.nextLine();
+                    Customer customer = manager.getCustomers().stream()
+                            .filter(c -> c.getCustomerId().equals(custId))
+                            .findFirst()
+                            .orElse(null);
+                    if (customer != null) {
+                        manager.createInvoice(invoiceId, customer);
+                    } else {
+                        System.out.println("Customer not found.");
+                    }
+                    break;
+            
+                case 7: // Add Product to Invoice
+                    System.out.print("Enter invoice ID: ");
+                    String invId = scanner.nextLine();
+                    System.out.print("Enter product ID: ");
+                    String prodId = scanner.nextLine();
+                    System.out.print("Enter quantity: ");
+                    int qty = scanner.nextInt();
+                    scanner.nextLine();
+                    Product product = manager.getProducts().stream()
+                            .filter(p -> p.getProductId().equals(prodId))
+                            .findFirst()
+                            .orElse(null);
+                    if (product != null) {
+                        manager.addProductToInvoice(invId, product, qty);
+                    } else {
+                        System.out.println("Product not found.");
+                    }
+                    break;
+            
+                case 8: // Display Invoices
+                    manager.displayInvoices();
+                    break;
+            
+                case 9: // Exit
+                    System.out.println("Exiting system. Goodbye!");
+                    scanner.close();
+                    return;
+            
+                default:
+                    System.out.println("Invalid choice. Please enter a number between 1 and 9.");
+            }
+            
+        }
+    }
+}
